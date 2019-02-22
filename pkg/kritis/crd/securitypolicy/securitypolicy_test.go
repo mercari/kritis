@@ -210,7 +210,7 @@ func Test_OnlyFixesNotAvailablePassWithWhitelist(t *testing.T) {
 }
 
 func Test_BuiltProjectIDs(t *testing.T) {
-	t.Run("ISP has one buildProjjectIDs", func(t *testing.T) {
+	t.Run("ISP has one buildProjectIDs", func(t *testing.T) {
 		isp := v1beta1.ImageSecurityPolicy{
 			Spec: v1beta1.ImageSecurityPolicySpec{
 				BuiltProjectIDs: []string{"kritis-p-1"},
@@ -250,7 +250,7 @@ func Test_BuiltProjectIDs(t *testing.T) {
 		})
 	})
 
-	t.Run("ISP has 2 buildProjjectIDs", func(t *testing.T) {
+	t.Run("ISP has 2 buildProjectIDs", func(t *testing.T) {
 		isp := v1beta1.ImageSecurityPolicy{
 			Spec: v1beta1.ImageSecurityPolicySpec{
 				BuiltProjectIDs: []string{"kritis-p-1", "kritis-p-2"},
