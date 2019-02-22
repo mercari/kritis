@@ -235,6 +235,7 @@ func (c Client) CreateAttestationOccurence(note *grafeas.Note,
 
 // Builds gets Build Occurrences for a specified image.
 func (c Client) Builds(containerImage string) ([]metadata.Build, error) {
+	glog.Infof("getttig build occurrences for %s", containerImage)
 	occs, err := c.fetchOccurrence(containerImage, "BUILD")
 	if err != nil {
 		return nil, err
