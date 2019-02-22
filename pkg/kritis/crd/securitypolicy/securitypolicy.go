@@ -19,6 +19,7 @@ package securitypolicy
 import (
 	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/grafeas/kritis/pkg/kritis/apis/kritis/v1beta1"
 	clientset "github.com/grafeas/kritis/pkg/kritis/client/clientset/versioned"
 	"github.com/grafeas/kritis/pkg/kritis/constants"
@@ -118,6 +119,38 @@ func ValidateImageSecurityPolicy(isp v1beta1.ImageSecurityPolicy, image string, 
 			reason:        SeverityReason(image, v, isp),
 		})
 	}
+
+	// Check build occurrences
+	glog.Infof("isp.Spec.BuiltProjectIDs = %v", isp.Spec.BuiltProjectIDs)
+	if len(isp.Spec.BuiltProjectIDs) > 0 {
+		builds, err := client.Builds(image)
+		if err != nil {
+			return nil, err
+		}
+		hasBuildProjectID := false
+		for _, projectID := range isp.Spec.BuiltProjectIDs {
+			for _, build := range builds {
+				if build.Provenance.ProjectID == projectID {
+					hasBuildProjectID = true
+					break
+				}
+			}
+			if hasBuildProjectID {
+				break
+			}
+		}
+		if !hasBuildProjectID {
+			violations = append(
+				violations,
+				NewViolation(
+					nil,
+					policy.BuildProjectIDViolation,
+					policy.Reason(fmt.Sprintf("%s doesn't have build occurence with required projectIDs", image)),
+				),
+			)
+		}
+	}
+
 	return violations, nil
 }
 
