@@ -210,90 +210,95 @@ func Test_OnlyFixesNotAvailablePassWithWhitelist(t *testing.T) {
 }
 
 func Test_BuiltProjectIDs(t *testing.T) {
-	t.Run("ISP has one buildProjectIDs", func(t *testing.T) {
-		isp := v1beta1.ImageSecurityPolicy{
-			Spec: v1beta1.ImageSecurityPolicySpec{
-				BuiltProjectIDs: []string{"kritis-p-1"},
+	type subTest struct {
+		name            string
+		buildProvenance *metadata.BuildProvenance
+		hasViolation    bool
+	}
+
+	var tests = []struct {
+		name            string
+		builtProjectIDs []string
+		subTests        []subTest
+	}{
+		{
+			"ISP has 1 buildProjectIDs",
+			[]string{"kritis-p-1"},
+			[]subTest{
+				{
+					"should have a build projectID violation",
+					nil,
+					true,
+				},
+				{
+					"allowed with correct build projectID",
+					&metadata.BuildProvenance{
+						ProjectID: "kritis-p-1",
+						Creator:   "kritis-p-1@example.com",
+					},
+					false,
+				},
 			},
-		}
-
-		t.Run("should have a build projectID violation", func(t *testing.T) {
-			mc := &testutil.MockMetadataClient{
-				Build: []metadata.Build{},
-			}
-			violations, err := ValidateImageSecurityPolicy(isp, testutil.QualifiedImage, mc)
-			if err != nil {
-				t.Errorf("error validating isp: %v", err)
-			}
-			if len(violations) != 1 {
-				t.Errorf("should have a violation")
-			}
-		})
-		t.Run("allowed with correct build projectID", func(t *testing.T) {
-			mc := &testutil.MockMetadataClient{
-				Build: []metadata.Build{
-					{
-						Provenance: &metadata.BuildProvenance{
-							ProjectID: "kritis-p-1",
-							Creator:   "kritis-p-1@example.com",
-						},
-					},
+		},
+		{
+			"ISP has 2 buildProjectIDs",
+			[]string{"kritis-p-1", "kritis-p-2"},
+			[]subTest{
+				{
+					"should have a build projectID violation",
+					nil,
+					true,
 				},
-			}
-			violations, err := ValidateImageSecurityPolicy(isp, testutil.QualifiedImage, mc)
-			if err != nil {
-				t.Errorf("error validating isp: %v", err)
-			}
-			if violations != nil {
-				t.Errorf("got unexpected violations: %v", violations)
-			}
-		})
-	})
-
-	t.Run("ISP has 2 buildProjectIDs", func(t *testing.T) {
-		isp := v1beta1.ImageSecurityPolicy{
-			Spec: v1beta1.ImageSecurityPolicySpec{
-				BuiltProjectIDs: []string{"kritis-p-1", "kritis-p-2"},
+				{
+					"allowed with correct build projectID (1)",
+					&metadata.BuildProvenance{
+						ProjectID: "kritis-p-1",
+						Creator:   "kritis-p-1@example.com",
+					},
+					false,
+				},
+				{
+					"allowed with correct build projectID (2)",
+					&metadata.BuildProvenance{
+						ProjectID: "kritis-p-2",
+						Creator:   "kritis-p-2@example.com",
+					},
+					false,
+				},
 			},
-		}
-
-		t.Run("should have a build projectID violation", func(t *testing.T) {
-			mc := &testutil.MockMetadataClient{
-				Build: []metadata.Build{
-					{
-						Provenance: &metadata.BuildProvenance{
-							ProjectID: "kritis-p-1",
-							Creator:   "kritis-p-1@example.com",
-						},
-					},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			isp := v1beta1.ImageSecurityPolicy{
+				Spec: v1beta1.ImageSecurityPolicySpec{
+					BuiltProjectIDs: test.builtProjectIDs,
 				},
 			}
-			violations, err := ValidateImageSecurityPolicy(isp, testutil.QualifiedImage, mc)
-			if err != nil {
-				t.Errorf("error validating isp: %v", err)
-			}
-			if violations != nil {
-				t.Errorf("got unexpected violations: %v", violations)
-			}
-		})
-		t.Run("allowed with correct build projectID", func(t *testing.T) {
-			mc := &testutil.MockMetadataClient{
-				Build: []metadata.Build{
-					{
-						Provenance: &metadata.BuildProvenance{
-							ProjectID: "kritis-p-2",
-							Creator:   "kritis-p-2@example.com",
+			for _, subTest := range test.subTests {
+				t.Run(subTest.name, func(t *testing.T) {
+					mc := &testutil.MockMetadataClient{
+						Build: []metadata.Build{
+							{
+								Provenance: subTest.buildProvenance,
+							},
 						},
-					},
-				},
-			}
-			violations, err := ValidateImageSecurityPolicy(isp, testutil.QualifiedImage, mc)
-			if err != nil {
-				t.Errorf("error validating isp: %v", err)
-			}
-			if violations != nil {
-				t.Errorf("got unexpected violations: %v", violations)
+					}
+					violations, err := ValidateImageSecurityPolicy(isp, testutil.QualifiedImage, mc)
+					if err != nil {
+						t.Errorf("error validating isp: %v", err)
+					}
+					if subTest.hasViolation {
+						if len(violations) != 1 {
+							t.Errorf("should have a violation")
+						}
+					} else {
+						if violations != nil {
+							t.Errorf("got unexpected violations: %v", violations)
+						}
+					}
+				})
 			}
 		})
-	})
+	}
 }
