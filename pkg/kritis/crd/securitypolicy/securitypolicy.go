@@ -18,6 +18,7 @@ package securitypolicy
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/grafeas/kritis/pkg/kritis/apis/kritis/v1beta1"
@@ -145,7 +146,13 @@ func ValidateImageSecurityPolicy(isp v1beta1.ImageSecurityPolicy, image string, 
 				NewViolation(
 					nil,
 					policy.BuildProjectIDViolation,
-					policy.Reason(fmt.Sprintf("%s doesn't have build occurence with required projectIDs", image)),
+					policy.Reason(
+						fmt.Sprintf(
+							"%s doesn't have build occurrence with required projectIDs: [%s]",
+							image,
+							strings.Join(isp.Spec.BuiltProjectIDs, ","),
+						),
+					),
 				),
 			)
 		}

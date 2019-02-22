@@ -28,6 +28,7 @@ import (
 
 	"google.golang.org/grpc/credentials"
 
+	"github.com/golang/glog"
 	kritisv1beta1 "github.com/grafeas/kritis/pkg/kritis/apis/kritis/v1beta1"
 	"github.com/grafeas/kritis/pkg/kritis/constants"
 	"github.com/grafeas/kritis/pkg/kritis/metadata"
@@ -244,6 +245,7 @@ func (c Client) Builds(containerImage string) ([]metadata.Build, error) {
 			builds = append(builds, *v)
 		}
 	}
+	glog.Infof("got build occurrences (%d) for %s", len(builds), containerImage)
 	return builds, nil
 }
 
