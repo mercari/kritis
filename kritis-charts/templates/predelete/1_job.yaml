@@ -17,7 +17,6 @@ spec:
       labels:
         app: {{ .Values.predelete.job.name }}
     spec:
-      serviceAccountName: {{ .Values.predelete.serviceAccount }}
       restartPolicy: Never
       containers:
         - name: {{ .Values.predelete.job.name }}
