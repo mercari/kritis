@@ -210,21 +210,21 @@ func Test_OnlyFixesNotAvailablePassWithWhitelist(t *testing.T) {
 }
 
 func Test_BuiltProjectIDs(t *testing.T) {
-	type subTest struct {
+	type subCase struct {
 		name            string
 		buildProvenance *metadata.BuildProvenance
 		hasViolation    bool
 	}
 
-	var tests = []struct {
+	var cases = []struct {
 		name            string
 		builtProjectIDs []string
-		subTests        []subTest
+		subCases        []subCase
 	}{
 		{
 			"ISP has 1 buildProjectIDs",
 			[]string{"kritis-p-1"},
-			[]subTest{
+			[]subCase{
 				{
 					"should have a build projectID violation",
 					nil,
@@ -243,7 +243,7 @@ func Test_BuiltProjectIDs(t *testing.T) {
 		{
 			"ISP has 2 buildProjectIDs",
 			[]string{"kritis-p-1", "kritis-p-2"},
-			[]subTest{
+			[]subCase{
 				{
 					"should have a build projectID violation",
 					nil,
@@ -268,19 +268,19 @@ func Test_BuiltProjectIDs(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
 			isp := v1beta1.ImageSecurityPolicy{
 				Spec: v1beta1.ImageSecurityPolicySpec{
-					BuiltProjectIDs: test.builtProjectIDs,
+					BuiltProjectIDs: c.builtProjectIDs,
 				},
 			}
-			for _, subTest := range test.subTests {
-				t.Run(subTest.name, func(t *testing.T) {
+			for _, sc := range c.subCases {
+				t.Run(sc.name, func(t *testing.T) {
 					mc := &testutil.MockMetadataClient{
 						Build: []metadata.Build{
 							{
-								Provenance: subTest.buildProvenance,
+								Provenance: sc.buildProvenance,
 							},
 						},
 					}
@@ -288,7 +288,7 @@ func Test_BuiltProjectIDs(t *testing.T) {
 					if err != nil {
 						t.Errorf("error validating isp: %v", err)
 					}
-					if subTest.hasViolation {
+					if sc.hasViolation {
 						if len(violations) != 1 {
 							t.Errorf("should have a violation")
 						}
