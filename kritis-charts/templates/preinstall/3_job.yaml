@@ -20,7 +20,7 @@ spec:
       imagePullSecrets:
       {{- range .Values.image.pullSecrets }}
         - name: {{ . }}
-      {{- end}}
+      {{- end }}
       {{- end }}
       restartPolicy: Never
       serviceAccountName: {{ .Values.preinstall.serviceAccount }}
