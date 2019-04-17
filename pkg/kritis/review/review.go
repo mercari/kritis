@@ -94,7 +94,7 @@ func (r Reviewer) Review(images []string, isps []v1beta1.ImageSecurityPolicy, po
 			}
 			if r.config.IsWebhook {
 				if err := r.addAttestations(image, attestations, isp); err != nil {
-					glog.Errorf("Failed adding attestations: %s", err)
+					glog.Errorf("failed adding attestations: %s", err)
 				}
 			}
 			glog.Infof("Found no violations for %s within ISP %s", image, isp.Name)
