@@ -307,17 +307,6 @@ func fingerprint(key string) (string, error) {
 	return s.Fingerprint(), nil
 }
 
-func NewBinauthzAttestorFetcher() (AttestorFetcher, error) {
-	client, err := binauthz.New()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create Binary Authorization client")
-	}
-
-	return &binauthzAttestorFetcher{
-		client: client,
-	}, nil
-}
-
 func hasRequiredAttestation(image string, attestor *Attestor, attestations []metadata.PGPAttestation) (bool, error) {
 	sig, err := container.NewAtomicContainerSig(image, map[string]string{})
 	if err != nil {
