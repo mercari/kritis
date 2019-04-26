@@ -282,7 +282,7 @@ func reviewImages(images []string, ns string, pod *v1.Pod, ar *v1beta1.Admission
 		return
 	}
 	if len(isps) == 0 {
-		glog.Errorf("no ImageSecurityPolicy found in namespace %s, skip reviewing", ns)
+		glog.Infof("no ImageSecurityPolicy found in namespace %s, skip reviewing", ns)
 		return
 	}
 
