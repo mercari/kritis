@@ -49,7 +49,7 @@ func ImageInWhitelist(whitelist []string, image string) (bool, error) {
 			return false, err
 		}
 
-		// Make sure images have the same context
+		// Make sure images have the same name
 		if whitelistRef.Context().Name() == imageRef.Context().Name() {
 			return true, nil
 		}
