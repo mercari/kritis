@@ -33,6 +33,7 @@ import (
 	kritisv1beta1 "github.com/grafeas/kritis/pkg/kritis/apis/kritis/v1beta1"
 	kritisconstants "github.com/grafeas/kritis/pkg/kritis/constants"
 	"github.com/grafeas/kritis/pkg/kritis/crd/authority"
+	"github.com/grafeas/kritis/pkg/kritis/crd/kritisconfig"
 	"github.com/grafeas/kritis/pkg/kritis/crd/securitypolicy"
 	"github.com/grafeas/kritis/pkg/kritis/metadata"
 	"github.com/grafeas/kritis/pkg/kritis/review"
@@ -397,12 +398,13 @@ func getReviewer(client metadata.Fetcher) reviewer {
 	}
 
 	return review.New(client, &review.Config{
-		Strategy:  defaultViolationStrategy,
-		IsWebhook: true,
-		Secret:    secrets.Fetch,
-		Auths:     authority.Authority,
-		Validate:  securitypolicy.ValidateImageSecurityPolicy,
-		Attestors: attestorFetcher,
+		Strategy:                        defaultViolationStrategy,
+		IsWebhook:                       true,
+		Secret:                          secrets.Fetch,
+		Auths:                           authority.Authority,
+		Validate:                        securitypolicy.ValidateImageSecurityPolicy,
+		Attestors:                       attestorFetcher,
+		ClusterWhitelistedImagesRemover: kritisconfig.RemoveWhitelistedImages,
 	})
 }
 

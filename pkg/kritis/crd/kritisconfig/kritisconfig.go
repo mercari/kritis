@@ -24,7 +24,10 @@ import (
 
 	"github.com/grafeas/kritis/pkg/kritis/apis/kritis/v1beta1"
 	clientset "github.com/grafeas/kritis/pkg/kritis/client/clientset/versioned"
+	"github.com/grafeas/kritis/pkg/kritis/util"
 )
+
+type ClusterWhitelistedImagesRemover func(images []string) ([]string, error)
 
 // KritisConfig returns KritisConfig in the cluster
 func KritisConfig() (*v1beta1.KritisConfig, error) {
@@ -50,4 +53,30 @@ func KritisConfig() (*v1beta1.KritisConfig, error) {
 	}
 
 	return &list.Items[0], nil
+}
+
+func RemoveWhitelistedImages(images []string) ([]string, error) {
+	config, err := KritisConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get KritisConfig")
+	}
+	if config == nil {
+		return images, nil
+	}
+
+	notWhitelisted := []string{}
+	for _, image := range images {
+		whitelisted, err := imageInWhitelist(config, image)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to check if image is in whitelist: %s", image)
+		}
+		if !whitelisted {
+			notWhitelisted = append(notWhitelisted, image)
+		}
+	}
+	return notWhitelisted, nil
+}
+
+func imageInWhitelist(config *v1beta1.KritisConfig, image string) (bool, error) {
+	return util.ImageInWhitelist(config.Spec.ImageWhitelist, image)
 }
